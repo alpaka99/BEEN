@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.been.beenbackend.Mapper.UserMapper">
+	<select id="list" resultType="user">
+		select *
+		from user
+	</select>
+	
+	<select id="listOneById" parameterType="int" resultType="user">
+		select *
+		from user
+		where id = #{id}
+	</select>
+
+	<select id="listOneByEmail" parameterType="String" resultType="user">
+		select *
+		from user
+		where email = #{email}
+	</select>
+
+	<select id="signIn" parameterType="String" resultType="user">
+		select *
+		from user
+		where email = #{email} and password = #{password} and emailConfirmation = 1;
+	</select>
+	
+	<insert id="register" parameterType="user" useGeneratedKeys="true" keyColumn="id">
+		insert into user (id, email, password, intro, nickname, name)
+		values (#{id}, #{email}, #{password}, #{intro}, #{nickname}, #{name})
+		;
+	</insert>
+	
+	<update id="modify" parameterType="user">
+		update user
+		set password = #{password}, intro = #{intro}, nickname = #{nickname}, tier = #{tier}, followingCnt = #{followingCnt}, followerCnt = #{followerCnt},
+		profilePicSrc = #{profilePicSrc}, profilePicName = #{profilePicName}, emailConfirmation = #{emailConfirmation}, status = #{status}
+		where id = #{id};
+	</update>
+
+	<delete id="delete" parameterType="String">
+		delete from user
+		where id = #{id};
+	</delete>
+
+	<insert id="makeFollow" parameterType="String">
+		insert into follow (followerId, followedId)
+		values (#{followerId}, #{followedId});
+	</insert>
+
+	<delete id="removeFollow" parameterType="String">
+		delete from follow
+		where followerId = #{followerId} and followedId = #{followedId};
+	</delete>
+
+	<update id="acceptFollow" parameterType="String">
+		update follow
+		set accepted = 1
+		where followerId = #{followerId} and followedId = #{followedId};
+	</update>
+
+	<!-- 나를 팔로우한 사람들 보기-->
+	<select id="showFollower" parameterType="String" resultType="user">
+		SELECT id, password, email, intro, nickname, name, tier, followerCnt, followingCnt, createdAt, profilePicSrc, profilePicName, emailConfirmation ,status
+		FROM user INNER JOIN follow ON follow.followedId=user.id
+		WHERE user.id = #{id} AND follow.accepted=1
+
+	</select>
+
+	<!-- 내가 팔로우중인 사람들 보기-->
+	<select id="showFollowing" parameterType="String" resultType="user">
+		select id, password, email, intro, nickname, name, tier, followerCnt, followingCnt, createdAt, profilePicSrc, profilePicName, emailConfirmation, status
+		from user inner join follow on follow.followerId = user.id
+		where user.id = #{id} and follow.accepted=1
+	</select>
+
+	<!--이메일로 검색-->
+	<select id="findUser" parameterType="String" resultType="user">
+		select * from user
+		where email like #{email};
+	</select>
+
+	<update id="updatePic" parameterType="user">
+		update user
+		set profilePicSrc = #{profilePicSrc}, profilePicName = #{profilePicName}
+		where email = #{email};
+	</update>
+</mapper>
